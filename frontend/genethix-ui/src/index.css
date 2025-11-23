@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------
+   GLOBAL GENETHIX BRAND COLORS
+--------------------------------*/
+:root {
+  --genethix-primary: #0ea5e9;
+  --genethix-dark: #0b243b;
+}
+
+.text-genethix-primary {
+  color: var(--genethix-primary);
+}
+
+.bg-genethix-primary {
+  background-color: var(--genethix-primary);
+}
+
+.text-genethix-dark {
+  color: var(--genethix-dark);
+}
+
+/* ------------------------------
+   BUTTON NATIVE STYLES
+--------------------------------*/
+.btn-primary {
+  @apply bg-genethix-primary text-white px-6 py-3 rounded-xl shadow-md hover:bg-genethix-dark transition;
+}
+
+.btn-ghost {
+  @apply text-genethix-primary hover:text-genethix-dark transition font-medium;
+}
+
+/* ------------------------------
+   CARD STYLE
+--------------------------------*/
+.card {
+  @apply bg-white rounded-2xl shadow-lg p-6 border border-gray-200;
+}
+
+/* ------------------------------
+   FADE-IN ANIMATIONS
+--------------------------------*/
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(25px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+.animate-fade-in-delay {
+  animation: fadeInUp 1.2s ease-out forwards;
+  opacity: 0;
+}
+.animate-fade-in-delay2 {
+  animation: fadeInUp 1.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* ------------------------------
+   FLOATING WAVE (WELCOME PAGE)
+--------------------------------*/
+@keyframes waveFloat {
+  0% { transform: translateY(-80px); }
+  50% { transform: translateY(40px); }
+  100% { transform: translateY(-80px); }
+}
+.animate-wave-glow {
+  animation: waveFloat 7s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(0, 200, 255, 0.5))
+          drop-shadow(0 0 30px rgba(0, 150, 255, 0.4));
+}
+
+/* ------------------------------
+   FLOATING WAVE (LOGIN PAGE)
+--------------------------------*/
+@keyframes waveMoveLogin {
+  0% { transform: translateY(-60px); }
+  50% { transform: translateY(30px); }
+  100% { transform: translateY(-60px); }
+}
+.animate-wave-login {
+  animation: waveMoveLogin 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 25px rgba(0,200,255,0.6));
+}
+
+/* ------------------------------
+   PARTICLE FLOATING ANIMATION
+--------------------------------*/
+@keyframes particleFloat {
+  0% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-120px) translateX(20px); opacity: 0; }
+}
+
+.animate-particle {
+  animation: particleFloat linear infinite;
+}
+
+/* ------------------------------
+   FLOATING CARD (OLD WELCOME)
+--------------------------------*/
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+/* ------------------------------
+   GLOW CARD EFFECT
+--------------------------------*/
+.glow-card {
+  box-shadow:
+    0 0 25px rgba(0, 153, 255, 0.15),
+    0 0 45px rgba(0, 153, 255, 0.10),
+    inset 0 0 25px rgba(255, 255, 255, 0.2);
+}
+
+/* ------------------------------
+   CLEAN INPUTS
+--------------------------------*/
+input, select {
+  @apply rounded-xl px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-genethix-primary focus:outline-none;
+}
+
+/* Fix dark background for login-select options */
+select option {
+  color: black;
+}
