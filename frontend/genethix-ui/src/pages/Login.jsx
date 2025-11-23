@@ -16,7 +16,7 @@ export default function Login() {
     localStorage.setItem("role", role);
 
     if (role === "admin") navigate("/admin");
-    else navigate("/consent");
+    else navigate("/home");
   };
 
   return (

@@ -1,173 +1,128 @@
 import React, { useState } from "react";
-import { api } from "../api";
+import { aiReviewer } from "../utils/aiReviewer";
 
 export default function Decision() {
-  const userId = localStorage.getItem("userId");
-
-  const [inputData, setInputData] = useState({
+  const [inputs, setInputs] = useState({
+    user_id: "",
     age: "",
     income: "",
-    credit_score: "",
-    debt: ""
+    debt: "",
+    creditScore: "",
+    dti: "",
+    loanAmount: "",
   });
 
   const [result, setResult] = useState(null);
-  const [explanation, setExplanation] = useState(null);
+  const [consent, setConsent] = useState({
+    credit_scoring: true,
+    personalization: true,
+  });
 
   const handleChange = (e) => {
-    setInputData({ ...inputData, [e.target.name]: e.target.value });
+    setInputs({ ...inputs, [e.target.name]: e.target.value });
   };
 
-  const getDecision = async () => {
+  const handleDecision = async () => {
     try {
-      const res = await api.post("/predict", {
-        user_id: userId,
-        ...inputData
+      const res = await fetch("https://genethix-backend.onrender.com/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(inputs),
       });
 
-      setResult(res.data.prediction);
-      setExplanation(res.data.explanation);
-    } catch (err) {
-      alert("Error getting decision.");
+      const data = await res.json();
+      setResult(data);
+    } catch (error) {
+      console.error("Prediction error:", error);
     }
   };
 
+  const reviewerFeedback = aiReviewer(inputs, consent);
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-black text-white px-6 py-10">
+      <h1 className="text-3xl font-bold text-blue-400 mb-6">
+        Explain My Decision
+      </h1>
 
-      {/* GLASS CARD */}
-      <div className="
-        bg-white/10 
-        backdrop-blur-xl 
-        border border-white/20 
-        rounded-3xl 
-        p-10 
-        shadow-2xl
-        text-white
-      ">
+      {/* INPUT FORM */}
+      <div className="grid grid-cols-2 gap-4">
+        {Object.keys(inputs).map((key) => (
+          <input
+            key={key}
+            name={key}
+            value={inputs[key]}
+            onChange={handleChange}
+            placeholder={key}
+            className="p-3 bg-gray-800 text-white rounded-lg"
+          />
+        ))}
+      </div>
 
-        {/* Header */}
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-genethix-primary to-blue-300 text-transparent bg-clip-text mb-4">
-          Explain My Decision
-        </h1>
+      {/* GET DECISION BUTTON */}
+      <button
+        onClick={handleDecision}
+        className="mt-6 px-6 py-3 bg-blue-500 rounded-lg font-semibold hover:bg-blue-600"
+      >
+        Get Decision
+      </button>
 
-        <p className="text-gray-300 mb-10">
-          Understand how GENETHIX AI evaluates your profile.
-          <br />
-          Logged in as: <span className="text-genethix-primary font-semibold">{userId}</span>
-        </p>
+      {/* DECISION OUTPUT */}
+      {result && (
+        <div className="mt-10 bg-gray-900 p-6 rounded-xl">
+          <h2 className="text-2xl font-bold text-blue-300 mb-4">
+            AI Decision Result
+          </h2>
 
-        {/* INPUT FORM */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          <p className="text-gray-200">
+            <strong>Decision:</strong> {result.prediction}
+          </p>
 
-          <div>
-            <label className="text-gray-300 text-sm">Age</label>
-            <input
-              name="age"
-              type="number"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white"
-              value={inputData.age}
-              onChange={handleChange}
-            />
-          </div>
+          <p className="text-gray-200">
+            <strong>Approval Probability:</strong>{" "}
+            {(result.probability * 100).toFixed(2)}%
+          </p>
 
-          <div>
-            <label className="text-gray-300 text-sm">Income</label>
-            <input
-              name="income"
-              type="number"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white"
-              value={inputData.income}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-300 text-sm">Credit Score</label>
-            <input
-              name="credit_score"
-              type="number"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white"
-              value={inputData.credit_score}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-300 text-sm">Debt</label>
-            <input
-              name="debt"
-              type="number"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white"
-              value={inputData.debt}
-              onChange={handleChange}
-            />
-          </div>
-
-        </div>
-
-        {/* PREDICT BUTTON */}
-        <button
-          onClick={getDecision}
-          className="
-            w-full py-3 rounded-xl font-semibold text-lg
-            bg-gradient-to-r from-genethix-primary to-blue-500
-            shadow-[0_0_15px_rgba(0,200,255,0.4)]
-            hover:shadow-[0_0_25px_rgba(0,200,255,0.7)]
-            transition-all duration-300
-          "
-        >
-          Generate AI Decision →
-        </button>
-
-        {/* RESULT */}
-        {result && (
-          <div className="mt-10">
-            <h2 className="text-2xl font-bold text-genethix-primary mb-3">
-              Decision Outcome
-            </h2>
-
-            <p className="text-gray-200 text-lg mb-6">
-              Result: <span className="font-semibold">{result}</span>
-            </p>
-          </div>
-        )}
-
-        {/* EXPLANATION BOX */}
-        {explanation && (
-          <div className="mt-8 bg-white/10 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-
-            <h3 className="text-xl font-semibold mb-4 text-blue-300">
-              Why This Decision?
+          {/* BIAS INDICATOR */}
+          <div className="mt-4 p-4 bg-gray-800 rounded-xl">
+            <h3 className="text-xl font-bold text-blue-300 mb-2">
+              Fairness / Bias Indicator
             </h3>
 
-            <p className="text-gray-300 leading-relaxed mb-6">
-              {explanation.reason}
+            <p className="text-gray-300">
+              Confidence Score: {(result.probability * 100).toFixed(2)}%
             </p>
 
-            {/* FEATURE IMPORTANCE */}
-            <h4 className="text-lg font-semibold text-genethix-primary mb-3">
-              Key Factors
-            </h4>
-
-            <div className="space-y-4">
-              {explanation.factors.map((factor, i) => (
-                <div key={i}>
-                  <p className="text-gray-300 text-sm mb-1">{factor.name}</p>
-
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div
-                      className="bg-genethix-primary h-2 rounded-full"
-                      style={{ width: `${factor.score}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
+            <p className="mt-1">
+              Bias Level:{" "}
+              {result.probability > 0.85 ? (
+                <span className="text-green-400 font-semibold">Low Bias ✓</span>
+              ) : result.probability > 0.6 ? (
+                <span className="text-yellow-400 font-semibold">
+                  Moderate Bias ⚠️
+                </span>
+              ) : (
+                <span className="text-red-400 font-semibold">
+                  High Bias ⚠️⚠️
+                </span>
+              )}
+            </p>
           </div>
-        )}
-      </div>
+
+          {/* AI REVIEWER */}
+          <div className="mt-6 bg-gray-800 p-4 rounded-xl">
+            <h3 className="text-xl font-semibold text-blue-300 mb-2">
+              AI Reviewer — Suggestions to Improve Approval
+            </h3>
+
+            <ul className="list-disc list-inside space-y-1 text-gray-300">
+              {reviewerFeedback.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

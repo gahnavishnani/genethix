@@ -1,123 +1,93 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../api";
 
 export default function Profile() {
-  const userId = localStorage.getItem("userId");
-  const [profile, setProfile] = useState({
-    user_id: userId,
-    age: "",
-    income: "",
-    credit_score: "",
-    debt: "",
-  });
+  const [userId, setUserId] = useState("");
+  const [age, setAge] = useState("");
+  const [income, setIncome] = useState("");
+  const [creditScore, setCreditScore] = useState("");
+  const [debt, setDebt] = useState("");
 
+  // Load User From LocalStorage
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await api.get(`/profile/${userId}`);
-        if (res.data) {
-          setProfile(res.data);
-        }
-      } catch (error) {
-        console.log("No profile found for this user yet.");
-      }
+    const saved = localStorage.getItem("genethix_user");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setUserId(parsed.userId);
+
+      fetch(`http://127.0.0.1:8000/profile/${parsed.userId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setAge(data.age);
+          setIncome(data.income);
+          setCreditScore(data.credit_score);
+          setDebt(data.debt);
+        });
+    }
+  }, []);
+
+  const handleUpdate = async () => {
+    const payload = {
+      user_id: userId,
+      age: Number(age),
+      income: Number(income),
+      credit_score: Number(creditScore),
+      debt: Number(debt)
     };
-    fetchProfile();
-  }, [userId]);
 
-  const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
-  };
+    const res = await fetch("http://127.0.0.1:8000/update_profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  const saveProfile = async () => {
-    try {
-      await api.post("/update_profile", profile);
-      alert("Profile updated successfully.");
-    } catch (error) {
-      alert("Error updating profile.");
+    const data = await res.json();
+
+    if (data.updated) {
+      alert("Profile updated successfully!");
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      
-      {/* GLASS CARD */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-10 shadow-2xl">
-        
-        {/* Header */}
-        <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-genethix-primary to-blue-300 text-transparent bg-clip-text">
-          Profile Information
-        </h1>
+    <div className="min-h-screen bg-black text-white p-10">
+      <h1 className="text-3xl font-bold text-blue-400 mb-6">My Profile</h1>
 
-        {/* Show Logged In User */}
-        <p className="text-gray-300 mb-8">
-          Logged in as: <span className="text-genethix-primary font-semibold">{userId}</span>
-        </p>
+      <div className="grid grid-cols-2 gap-4 max-w-xl">
 
-        {/* FORM */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <input
+          className="p-3 bg-gray-800 rounded-lg"
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+          placeholder="Age"
+        />
 
-          <div>
-            <label className="text-gray-400">Age</label>
-            <input
-              type="number"
-              name="age"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 text-white border border-white/20 focus:ring-genethix-primary"
-              value={profile.age}
-              onChange={handleChange}
-            />
-          </div>
+        <input
+          className="p-3 bg-gray-800 rounded-lg"
+          value={income}
+          onChange={(e) => setIncome(e.target.value)}
+          placeholder="Income"
+        />
 
-          <div>
-            <label className="text-gray-400">Income</label>
-            <input
-              type="number"
-              name="income"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 text-white border border-white/20 focus:ring-genethix-primary"
-              value={profile.income}
-              onChange={handleChange}
-            />
-          </div>
+        <input
+          className="p-3 bg-gray-800 rounded-lg"
+          value={creditScore}
+          onChange={(e) => setCreditScore(e.target.value)}
+          placeholder="Credit Score"
+        />
 
-          <div>
-            <label className="text-gray-400">Credit Score</label>
-            <input
-              type="number"
-              name="credit_score"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 text-white border border-white/20 focus:ring-genethix-primary"
-              value={profile.credit_score}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-400">Debt Amount</label>
-            <input
-              type="number"
-              name="debt"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 text-white border border-white/20 focus:ring-genethix-primary"
-              value={profile.debt}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <button
-          onClick={saveProfile}
-          className="
-            mt-8 px-8 py-3 rounded-xl font-semibold
-            bg-gradient-to-r from-genethix-primary to-blue-500
-            text-white
-            shadow-[0_0_20px_rgba(0,200,255,0.4)]
-            hover:shadow-[0_0_30px_rgba(0,200,255,0.7)]
-            hover:from-blue-600 hover:to-genethix-primary
-            transition-all duration-300
-          "
-        >
-          Save Profile →
-        </button>
+        <input
+          className="p-3 bg-gray-800 rounded-lg"
+          value={debt}
+          onChange={(e) => setDebt(e.target.value)}
+          placeholder="Debt Amount"
+        />
       </div>
+
+      <button
+        onClick={handleUpdate}
+        className="mt-6 px-6 py-3 bg-blue-500 rounded-lg font-semibold hover:bg-blue-600"
+      >
+        Save Profile
+      </button>
     </div>
   );
 }
